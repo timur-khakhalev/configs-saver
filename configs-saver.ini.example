@@ -1,0 +1,19 @@
+[configs]
+output_filename = mba13
+
+[paths]
+# Specify paths to dirs to save divided by ","
+dirs = ./input/somedir1,./input/somedir2
+
+# Specify files to save divided by ","
+files = ./input/file.txt,./input/somefile1
+
+# AWS Credentials
+[credentials]
+
+aws_access_key_id =
+aws_secret_access_key =
+aws_default_region =
+aws_endpoint_url =
+aws_bucket_name =
+aws_bucket_folder_prefix = unix-configs/mac
