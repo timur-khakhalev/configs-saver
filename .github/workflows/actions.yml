@@ -118,8 +118,8 @@ jobs:
 
       - name: Debug
         run: |
-          echo ls -la
-          echo ls -la ${{ env.BUILD_FOLDER }}
+          ls -la
+          ls -la ${{ env.BUILD_FOLDER }}
 
       - name: Upload Linux Release Asset
         id: upload-release-asset-linux
