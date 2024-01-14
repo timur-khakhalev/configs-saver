@@ -28,17 +28,18 @@ jobs:
 
       - name: Determine Version
         id: version
-        run: echo "TAG_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Determine Commit Message
         id: commit_message
-        run: echo "COMMIT_MESSAGE=$(git log --format=%B -n 1 ${{ github.sha }})" >> $GITHUB_ENV
+        run: echo "message=$(git log --format=%B -n 1 ${{ github.sha }})" >> $GITHUB_OUTPUT
 
       - name: Set Release Names
+        id: release_names
         run: |
-          echo "LINUX_AMD64_RELEASE_NAME=$APP_NAME-$TAG_VERSION-linux-amd64" >> $GITHUB_ENV
-          echo "MACOS_X86_64_RELEASE_NAME=$APP_NAME-$TAG_VERSION-macos-x86_64" >> $GITHUB_ENV
-          echo "MACOS_APPLE_SILICON_RELEASE_NAME=$APP_NAME-$TAG_VERSION-macos-arm64" >> $GITHUB_ENV
+          echo "LINUX_AMD64_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-linux-amd64" >> $GITHUB_OUTPUT
+          echo "MACOS_X86_64_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-macos-x86_64" >> $GITHUB_OUTPUT
+          echo "MACOS_APPLE_SILICON_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-macos-arm64" >> $GITHUB_OUTPUT
 
       - name: Build for Linux
         run: GOOS=linux GOARCH=amd64 go build -o ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }} main.go
@@ -57,8 +58,8 @@ jobs:
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v2
         with:
-          name: $LINUX_AMD64_RELEASE_NAME
-          path: ${{ env.BUILD_FOLDER }}/$LINUX_AMD64_RELEASE_NAME
+          name: ${{ jobs.build.steps.release_names.outputs.LINUX_AMD64_RELEASE_NAME }}
+          path: ${{ env.BUILD_FOLDER }}/${{ jobs.build.steps.release_names.outputs.LINUX_AMD64_RELEASE_NAME }}
           if-no-files-found: error
 
       - name: Upload macOS (x86_64) artifact
@@ -99,7 +100,7 @@ jobs:
           path: ${{ env.BUILD_FOLDER }}/$MACOS_APPLE_SILICON_RELEASE_NAME
 
       - name: Debug
-        run: echo steps.version.outputs.tag $TAG_VERSION
+        run: echo steps.version.outputs.tag ${{ steps.version.outputs.tag }}
 
       - name: Create Release
         id: create_release
@@ -107,9 +108,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: $TAG_VERSION
-          release_name: Release $TAG_VERSION
-          body: $COMMIT_MESSAGE
+          tag_name: ${{ steps.version.outputs.tag }}
+          release_name: Release ${{ steps.version.outputs.tag }}
+          body: ${{ steps.commit_message.outputs.message }}
           draft: false
           prerelease: false
 
