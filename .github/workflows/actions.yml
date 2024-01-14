@@ -8,10 +8,10 @@ on:
 env:
   APP_NAME: configs-saver
   BUILD_FOLDER: bin
-  LINUX_AMD64_RELEASE_NAME: ${{ env.APP_NAME }}-${{ steps.version.outputs.tag }}-linux
+  LINUX_AMD64_RELEASE_NAME: $APP_NAME-${{ steps.version.outputs.tag }}-linux
 #  LINUX_ARM64_RELEASE_NAME: ${{ env.APP_NAME }}-${{ steps.version.outputs.tag }}-linux
-  MACOS_X86_64_RELEASE_NAME: ${{ env.APP_NAME }}-${{ steps.version.outputs.tag }}-macos-x86_64
-  MACOS_APPLE_SILICON_RELEASE_NAME: ${{ env.APP_NAME }}-${{ steps.version.outputs.tag }}-macos-x86_64
+  MACOS_X86_64_RELEASE_NAME: $APP_NAME-${{ steps.version.outputs.tag }}-macos-x86_64
+  MACOS_APPLE_SILICON_RELEASE_NAME: $APP_NAME-${{ steps.version.outputs.tag }}-macos-x86_64
 
 jobs:
   build:
