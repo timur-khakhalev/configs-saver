@@ -1,12 +1,17 @@
 name: Build and upload artifacts
 
-on: [push]
-#  push:
-#    branches:
-#      - main
+on:
+  push:
+    tags:
+      - '*'
 
 env:
   APP_NAME: configs-saver
+  BUILD_FOLDER: bin
+  LINUX_AMD64_RELEASE_NAME: ${{ env.APP_NAME }}-${{ steps.version.outputs.tag }}-linux
+#  LINUX_ARM64_RELEASE_NAME: ${{ env.APP_NAME }}-${{ steps.version.outputs.tag }}-linux
+  MACOS_X86_64_RELEASE_NAME: ${{ env.APP_NAME }}-${{ steps.version.outputs.tag }}-macos-x86_64
+  MACOS_APPLE_SILICON_RELEASE_NAME: ${{ env.APP_NAME }}-${{ steps.version.outputs.tag }}-macos-x86_64
 
 jobs:
   build:
@@ -25,14 +30,18 @@ jobs:
         run: |
           go get .
 
+      - name: Determine Version
+        id: version
+        run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+
       - name: Build for Linux
-        run: GOOS=linux GOARCH=amd64 go build -o ./bin/${{ env.APP_NAME }}-linux main.go
+        run: GOOS=linux GOARCH=amd64 go build -o ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }}  main.go
 
       - name: Build for macOS (x86_64)
-        run: GOOS=darwin GOARCH=amd64 go build -o ./bin/${{ env.APP_NAME }}-macos-x86_64 main.go
+        run: GOOS=darwin GOARCH=amd64 go build -o ${{ env.BUILD_FOLDER }}/${{ env.MACOS_X86_64_RELEASE_NAME }} main.go
 
       - name: Build for macOS (arm64)
-        run: GOOS=darwin GOARCH=arm64 go build -o ./bin/${{ env.APP_NAME }}-macos-arm64 main.go
+        run: GOOS=darwin GOARCH=arm64 go build -o ${{ env.BUILD_FOLDER }}/${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }} main.go
 
   upload-artifacts:
     needs: build
@@ -43,16 +52,87 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.APP_NAME }}-linux
-          path: ${{ env.APP_NAME }}-linux
+          path: ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }}
 
       - name: Upload macOS (x86_64) artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.APP_NAME }}-macos-x86_64
-          path: ${{ env.APP_NAME }}-macos-x86_64
+          path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_X86_64_RELEASE_NAME }}
 
       - name: Upload macOS (arm64) artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.APP_NAME }}-macos-arm64
-          path: ${{ env.APP_NAME }}-macos-arm64
+          path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
+  release:
+    needs: upload-artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.LINUX_AMD64_RELEASE_NAME }}
+          path: ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }}
+
+      - name: Download macOS (x86_64) artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.MACOS_X86_64_RELEASE_NAME }}
+          path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_X86_64_RELEASE_NAME }}
+
+      - name: Download macOS (arm64) artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
+          path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
+
+      - name: Determine Commit Message
+        id: commit_message
+        run: echo "::set-output name=message::$(git log --format=%B -n 1 ${{ github.sha }})"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          release_name: Release ${{ steps.version.outputs.tag }}
+          body: ${{ steps.commit_message.outputs.message }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Linux Release Asset
+        id: upload-release-asset-linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }}
+          asset_name: ${{ env.LINUX_AMD64_RELEASE_NAME }}
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS (x86_64) Release Asset
+        id: upload-release-asset-macos-x86_64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_X86_64_RELEASE_NAME }}
+          asset_name: ${{ env.MACOS_X86_64_RELEASE_NAME }}
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS (arm64) Release Asset
+        id: upload-release-asset-macos-arm64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
+          asset_name: ${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
+          asset_content_type: application/octet-stream
