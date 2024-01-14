@@ -2,22 +2,23 @@ package main
 
 import (
 	"configs-saver/archivator"
-	"configs-saver/config-extractor"
-	"configs-saver/files"
+	configVarsExtractor "configs-saver/config-extractor"
 	uploader "configs-saver/s3-uploader"
+	"flag"
 	"fmt"
 	"log"
+	"os"
 )
 
 func main() {
-	configSaverIniPath := "~/.configs-saver.ini"
+	configSaverIniPath := flag.String("c", "", "Path to config *.ini")
+	flag.Parse()
 
-	exists := files.EnsurePathExists(configSaverIniPath, false)
-	if !exists {
-		log.Fatalln("Config file configs-saver.ini not found:", configSaverIniPath)
+	if *configSaverIniPath == "" {
+		log.Fatalln("Config file not specified")
 	}
 
-	configVars, err := config_extractor.LoadConfigs(configSaverIniPath)
+	configVars, err := configVarsExtractor.LoadConfigs(*configSaverIniPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,5 +30,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Object key:", objectKey)
+	err = os.Remove(archivePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Archive successfully uploaded to s3. Object key:", objectKey)
 }

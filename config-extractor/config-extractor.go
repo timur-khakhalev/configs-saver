@@ -1,6 +1,7 @@
 package config_extractor
 
 import (
+	"configs-saver/files"
 	"configs-saver/types"
 	"log"
 	"strings"
@@ -51,7 +52,7 @@ func LoadConfigs(filePath string) (configVars types.ConfigVars, err error) {
 func parsePaths(s string) []string {
 	values := strings.Split(s, ",")
 	for i := range values {
-		values[i] = strings.TrimSpace(values[i])
+		values[i] = files.ParsePath(strings.TrimSpace(values[i]))
 	}
 
 	return values

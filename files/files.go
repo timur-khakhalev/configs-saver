@@ -1,28 +1,20 @@
 package files
 
 import (
-	"os"
+	"os/user"
+	"path/filepath"
 	"strings"
-	//"path/filepath"
 )
 
-func EnsurePathExists(rawPath string, isDir bool) bool {
-	/*if rawPath == nil {
-		return false
-	}*/
-	var path string
-	if strings.Contains(rawPath, "${HOME}") {
-		path = strings.Replace(rawPath, "${HOME}", os.Getenv("HOME"), 1)
-	} else {
-		path = rawPath
-	}
-	f, err := os.Stat(path)
-	if isDir {
-		return err == nil && f.IsDir()
-	}
-		return err == nil && !f.IsDir()
-}
+func ParsePath(rawPath string) string {
+	usr, _ := user.Current()
+	dir := usr.HomeDir
 
-func GetStats (path string) {
+	if rawPath == "~" {
+		rawPath = dir
+	} else if strings.HasPrefix(rawPath, "~/") {
+		rawPath = filepath.Join(dir, rawPath[2:])
+	}
 
+	return rawPath
 }

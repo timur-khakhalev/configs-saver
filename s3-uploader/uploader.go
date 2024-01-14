@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"log"
 	"os"
+	filepathTool "path/filepath"
 
 	s3Config "github.com/aws/aws-sdk-go-v2/config"
 	s3Credentials "github.com/aws/aws-sdk-go-v2/credentials"
@@ -36,7 +37,7 @@ func UploadFile(filepath string, credentials types.AwsCredentials) (string, erro
 		log.Fatal("AwsBucketFolderPrefix is not valid")
 	}
 
-	objectKey := fmt.Sprintf("%v/%v", credentials.AwsBucketFolderPrefix, filepath)
+	objectKey := fmt.Sprintf("%v/%v", credentials.AwsBucketFolderPrefix, filepathTool.Base(filepath))
 
 	s3Client := s3.NewFromConfig(cfg)
 	file, err := os.Open(filepath)
