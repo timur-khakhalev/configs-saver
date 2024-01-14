@@ -123,8 +123,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.BUILD_FOLDER }}/${{ LINUX_AMD64_RELEASE_NAME }}
-          asset_name: ${{ LINUX_AMD64_RELEASE_NAME }}
+          asset_path: ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }}
+          asset_name: ${{ env.LINUX_AMD64_RELEASE_NAME }}
           asset_content_type: application/octet-stream
 
       - name: Upload macOS (x86_64) Release Asset
@@ -134,8 +134,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.BUILD_FOLDER }}/${{ MACOS_X86_64_RELEASE_NAME }}
-          asset_name: ${{ MACOS_X86_64_RELEASE_NAME }}
+          asset_path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_X86_64_RELEASE_NAME }}
+          asset_name: ${{ env.MACOS_X86_64_RELEASE_NAME }}
           asset_content_type: application/octet-stream
 
       - name: Upload macOS (arm64) Release Asset
@@ -145,6 +145,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.BUILD_FOLDER }}/${{ MACOS_APPLE_SILICON_RELEASE_NAME }}
-          asset_name: ${{ MACOS_APPLE_SILICON_RELEASE_NAME }}
+          asset_path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
+          asset_name: ${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
           asset_content_type: application/octet-stream
