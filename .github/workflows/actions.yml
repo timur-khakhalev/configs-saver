@@ -8,10 +8,6 @@ on:
 env:
   APP_NAME: configs-saver
   BUILD_FOLDER: bin
-  LINUX_AMD64_RELEASE_NAME: $APP_NAME-${{ steps.version.outputs.tag }}-linux
-#  LINUX_ARM64_RELEASE_NAME: ${{ env.APP_NAME }}-${{ steps.version.outputs.tag }}-linux
-  MACOS_X86_64_RELEASE_NAME: $APP_NAME-${{ steps.version.outputs.tag }}-macos-x86_64
-  MACOS_APPLE_SILICON_RELEASE_NAME: $APP_NAME-${{ steps.version.outputs.tag }}-macos-x86_64
 
 jobs:
   build:
@@ -33,6 +29,12 @@ jobs:
       - name: Determine Version
         id: version
         run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+
+      - name: Set Release Names
+        run: |
+          echo "LINUX_AMD64_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-linux" >> $GITHUB_ENV
+          echo "MACOS_X86_64_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-macos-x86_64" >> $GITHUB_ENV
+          echo "MACOS_APPLE_SILICON_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-macos-arm64" >> $GITHUB_ENV
 
       - name: Build for Linux
         run: GOOS=linux GOARCH=amd64 go build -o ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }}  main.go
