@@ -49,6 +49,8 @@ jobs:
 
       - name: Build for macOS (arm64)
         run: GOOS=darwin GOARCH=arm64 go build -o ${{ env.BUILD_FOLDER }}/${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }} main.go
+    outputs:
+      linux_amd_release_name: ${{ steps.release_names.outputs.LINUX_AMD64_RELEASE_NAME }}
 
   upload-artifacts:
     needs: build
@@ -58,8 +60,8 @@ jobs:
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ jobs.build.steps.release_names.outputs.LINUX_AMD64_RELEASE_NAME }}
-          path: ${{ env.BUILD_FOLDER }}/${{ jobs.build.steps.release_names.outputs.LINUX_AMD64_RELEASE_NAME }}
+          name: ${{ needs.build.outputs.linux_amd_release_name }}
+          path: ${{ env.BUILD_FOLDER }}/${{ needs.build.outputs.linux_amd_release_name }}
           if-no-files-found: error
 
       - name: Upload macOS (x86_64) artifact
