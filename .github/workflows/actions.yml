@@ -1,9 +1,9 @@
 name: Build and upload artifacts
 
-on:
-  push:
-    tags:
-      - '*'
+on: [push]
+#  push:
+#    tags:
+#      - '*'
 
 env:
   APP_NAME: configs-saver
@@ -74,7 +74,7 @@ jobs:
       linux_amd_release_name: ${{ env.LINUX_AMD64_RELEASE_NAME }}
 
   release:
-    needs: upload-artifacts
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
