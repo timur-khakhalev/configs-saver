@@ -51,21 +51,21 @@ jobs:
         run: GOOS=darwin GOARCH=arm64 go build -o ${{ env.BUILD_FOLDER }}/${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }} main.go
 
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.LINUX_AMD64_RELEASE_NAME }}
           path: ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }}
           if-no-files-found: error
 
       - name: Upload macOS (x86_64) artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.MACOS_X86_64_RELEASE_NAME }}
           path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_X86_64_RELEASE_NAME }}
           if-no-files-found: error
 
       - name: Upload macOS (arm64) artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
           path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
@@ -115,6 +115,11 @@ jobs:
           body: ${{ needs.build.outputs.commit_message }}
           draft: false
           prerelease: false
+
+      - name: Debug
+        run: |
+          echo ls -la
+          echo ls -la ${{ env.BUILD_FOLDER }}
 
       - name: Upload Linux Release Asset
         id: upload-release-asset-linux
