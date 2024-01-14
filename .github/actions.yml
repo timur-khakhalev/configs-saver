@@ -1,10 +1,6 @@
 name: Build and upload artifacts
 
-on:
-  push:
-    tags:
-      - '*'
-
+# deprecated currently
 env:
   APP_NAME: configs-saver
   BUILD_FOLDER: bin

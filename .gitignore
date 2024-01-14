@@ -4,3 +4,5 @@ bin
 
 *.ini
 *.tar.gz
+
+.DS_Store
