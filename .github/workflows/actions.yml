@@ -72,32 +72,37 @@ jobs:
           if-no-files-found: error
     outputs:
       linux_amd_release_name: ${{ env.LINUX_AMD64_RELEASE_NAME }}
+      macos_x86_64_release_name: ${{ env.MACOS_X86_64_RELEASE_NAME }}
+      macos_apple_silicon_release_name: ${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
+      tag_version: ${{ steps.version.outputs.tag }}
+      commit_message: ${{ steps.commit_message.outputs.message }}
 
   release:
     needs: build
     runs-on: ubuntu-latest
+    env:
+      LINUX_AMD64_RELEASE_NAME: ${{ needs.build.outputs.linux_amd_release_name }}
+      MACOS_X86_64_RELEASE_NAME: ${{ needs.build.outputs.macos_x86_64_release_name }}
+      MACOS_APPLE_SILICON_RELEASE_NAME: ${{ needs.build.outputs.macos_apple_silicon_release_name }}
 
     steps:
       - name: Download Linux artifact
         uses: actions/download-artifact@v2
         with:
-          name: ${{ needs.build.outputs.linux_amd_release_name }}
-          path: ${{ env.BUILD_FOLDER }}/${{ needs.build.outputs.linux_amd_release_name }}
+          name: ${{ env.LINUX_AMD64_RELEASE_NAME }}
+          path: ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }}
 
       - name: Download macOS (x86_64) artifact
         uses: actions/download-artifact@v2
         with:
-          name: $MACOS_X86_64_RELEASE_NAME
-          path: ${{ env.BUILD_FOLDER }}/$MACOS_X86_64_RELEASE_NAME
+          name: ${{ env.MACOS_X86_64_RELEASE_NAME }}
+          path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_X86_64_RELEASE_NAME }}
 
       - name: Download macOS (arm64) artifact
         uses: actions/download-artifact@v2
         with:
-          name: $MACOS_APPLE_SILICON_RELEASE_NAME
-          path: ${{ env.BUILD_FOLDER }}/$MACOS_APPLE_SILICON_RELEASE_NAME
-
-      - name: Debug
-        run: echo steps.version.outputs.tag ${{ steps.version.outputs.tag }}
+          name: ${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
+          path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
 
       - name: Create Release
         id: create_release
@@ -105,9 +110,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          release_name: Release ${{ steps.version.outputs.tag }}
-          body: ${{ steps.commit_message.outputs.message }}
+          tag_name: ${{ needs.build.outputs.tag_version }}
+          release_name: Release ${{ needs.build.outputs.tag_version }}
+          body: ${{ needs.build.outputs.commit_message }}
           draft: false
           prerelease: false
 
@@ -118,8 +123,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.BUILD_FOLDER }}/$LINUX_AMD64_RELEASE_NAME
-          asset_name: $LINUX_AMD64_RELEASE_NAME
+          asset_path: ${{ env.BUILD_FOLDER }}/${{ LINUX_AMD64_RELEASE_NAME }}
+          asset_name: ${{ LINUX_AMD64_RELEASE_NAME }}
           asset_content_type: application/octet-stream
 
       - name: Upload macOS (x86_64) Release Asset
@@ -129,8 +134,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.BUILD_FOLDER }}/$MACOS_X86_64_RELEASE_NAME
-          asset_name: $MACOS_X86_64_RELEASE_NAME
+          asset_path: ${{ env.BUILD_FOLDER }}/${{ MACOS_X86_64_RELEASE_NAME }}
+          asset_name: ${{ MACOS_X86_64_RELEASE_NAME }}
           asset_content_type: application/octet-stream
 
       - name: Upload macOS (arm64) Release Asset
@@ -140,6 +145,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.BUILD_FOLDER }}/$MACOS_APPLE_SILICON_RELEASE_NAME
-          asset_name: $MACOS_APPLE_SILICON_RELEASE_NAME
+          asset_path: ${{ env.BUILD_FOLDER }}/${{ MACOS_APPLE_SILICON_RELEASE_NAME }}
+          asset_name: ${{ MACOS_APPLE_SILICON_RELEASE_NAME }}
           asset_content_type: application/octet-stream
