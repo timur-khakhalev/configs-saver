@@ -1,0 +1,58 @@
+name: Build and upload artifacts
+
+on: [push]
+#  push:
+#    branches:
+#      - main
+
+env:
+  APP_NAME: configs-saver
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.x
+
+      - name: Install deps
+        run: |
+          go get .
+
+      - name: Build for Linux
+        run: GOOS=linux GOARCH=amd64 go build -o ./bin/${{ env.APP_NAME }}-linux main.go
+
+      - name: Build for macOS (x86_64)
+        run: GOOS=darwin GOARCH=amd64 go build -o ./bin/${{ env.APP_NAME }}-macos-x86_64 main.go
+
+      - name: Build for macOS (arm64)
+        run: GOOS=darwin GOARCH=arm64 go build -o ./bin/${{ env.APP_NAME }}-macos-arm64 main.go
+
+  upload-artifacts:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.APP_NAME }}-linux
+          path: ${{ env.APP_NAME }}-linux
+
+      - name: Upload macOS (x86_64) artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.APP_NAME }}-macos-x86_64
+          path: ${{ env.APP_NAME }}-macos-x86_64
+
+      - name: Upload macOS (arm64) artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.APP_NAME }}-macos-arm64
+          path: ${{ env.APP_NAME }}-macos-arm64

@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"configs-saver/archivator"
+	"configs-saver/archivator"
 	"configs-saver/config-extractor"
 	"configs-saver/files"
 	uploader "configs-saver/s3-uploader"
@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	configSaverIniPath := "./configs-saver.ini"
+	configSaverIniPath := "~/.configs-saver.ini"
 
 	exists := files.EnsurePathExists(configSaverIniPath, false)
 	if !exists {
@@ -22,11 +22,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//archivePath := archivator.ArchiveFiles(append(configVars.Dirs, configVars.Files...), configVars.OutputFilename)
+	archivePath := archivator.ArchiveFiles(append(configVars.Dirs, configVars.Files...), configVars.OutputFilename)
 
-	//fmt.Println("Archive path:", archivePath)
-
-	objectKey, err := uploader.UploadFile("mba13_16-36-0_13-1-2024.tar.gz", configVars.AwsCredentials)
+	objectKey, err := uploader.UploadFile(archivePath, configVars.AwsCredentials)
 	if err != nil {
 		log.Fatal(err)
 	}
