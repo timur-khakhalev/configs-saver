@@ -57,6 +57,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: "debug"
+        run: |
+          ls -la
+          ls -la $BUILD_FOLDER
+
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v2
         with:
