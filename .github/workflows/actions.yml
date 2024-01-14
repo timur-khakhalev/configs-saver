@@ -28,16 +28,16 @@ jobs:
 
       - name: Determine Version
         id: version
-        run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Set Release Names
         run: |
-          echo "LINUX_AMD64_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-linux" >> $GITHUB_ENV
+          echo "LINUX_AMD64_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-linux-amd64" >> $GITHUB_ENV
           echo "MACOS_X86_64_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-macos-x86_64" >> $GITHUB_ENV
           echo "MACOS_APPLE_SILICON_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-macos-arm64" >> $GITHUB_ENV
 
       - name: Build for Linux
-        run: GOOS=linux GOARCH=amd64 go build -o ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }}  main.go
+        run: GOOS=linux GOARCH=amd64 go build -o ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }} main.go
 
       - name: Build for macOS (x86_64)
         run: GOOS=darwin GOARCH=amd64 go build -o ${{ env.BUILD_FOLDER }}/${{ env.MACOS_X86_64_RELEASE_NAME }} main.go
@@ -53,19 +53,19 @@ jobs:
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.APP_NAME }}-linux
+          name: ${{ env.LINUX_AMD64_RELEASE_NAME }}
           path: ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }}
 
       - name: Upload macOS (x86_64) artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.APP_NAME }}-macos-x86_64
+          name: ${{ env.MACOS_X86_64_RELEASE_NAME }}
           path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_X86_64_RELEASE_NAME }}
 
       - name: Upload macOS (arm64) artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.APP_NAME }}-macos-arm64
+          name: ${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
           path: ${{ env.BUILD_FOLDER }}/${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }}
   release:
     needs: upload-artifacts
@@ -92,13 +92,14 @@ jobs:
 
       - name: Determine Commit Message
         id: commit_message
-        run: echo "::set-output name=message::$(git log --format=%B -n 1 ${{ github.sha }})"
+        run: echo "message=$(git log --format=%B -n 1 ${{ github.sha }})" >> $GITHUB_OUTPUT
 
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo version tag:${{ steps.version.outputs.tag }}
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           release_name: Release ${{ steps.version.outputs.tag }}
