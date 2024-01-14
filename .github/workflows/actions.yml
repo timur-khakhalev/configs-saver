@@ -37,9 +37,9 @@ jobs:
       - name: Set Release Names
         id: release_names
         run: |
-          echo "LINUX_AMD64_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-linux-amd64" >> $GITHUB_OUTPUT
-          echo "MACOS_X86_64_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-macos-x86_64" >> $GITHUB_OUTPUT
-          echo "MACOS_APPLE_SILICON_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-macos-arm64" >> $GITHUB_OUTPUT
+          echo "LINUX_AMD64_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-linux-amd64" >> $GITHUB_ENV
+          echo "MACOS_X86_64_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-macos-x86_64" >> $GITHUB_ENV
+          echo "MACOS_APPLE_SILICON_RELEASE_NAME=$APP_NAME-${{ steps.version.outputs.tag }}-macos-arm64" >> $GITHUB_ENV
 
       - name: Build for Linux
         run: GOOS=linux GOARCH=amd64 go build -o ${{ env.BUILD_FOLDER }}/${{ env.LINUX_AMD64_RELEASE_NAME }} main.go
@@ -50,7 +50,7 @@ jobs:
       - name: Build for macOS (arm64)
         run: GOOS=darwin GOARCH=arm64 go build -o ${{ env.BUILD_FOLDER }}/${{ env.MACOS_APPLE_SILICON_RELEASE_NAME }} main.go
     outputs:
-      linux_amd_release_name: ${{ steps.release_names.outputs.LINUX_AMD64_RELEASE_NAME }}
+      linux_amd_release_name: ${{ env.LINUX_AMD64_RELEASE_NAME }}
 
   upload-artifacts:
     needs: build
